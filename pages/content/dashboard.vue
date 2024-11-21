@@ -130,7 +130,7 @@ definePageMeta({
                 </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Method</TableHead>
-                <TableHead class="text-right">
+                <TableHead>
                   Amount
                 </TableHead>
               </TableRow>
@@ -142,7 +142,7 @@ definePageMeta({
                 </TableCell>
                 <TableCell>{{ invoice.paymentStatus }}</TableCell>
                 <TableCell>{{ invoice.paymentMethod }}</TableCell>
-                <TableCell class="text-right">
+                <TableCell>
                   {{ invoice.totalAmount }}
                 </TableCell>
               </TableRow>
