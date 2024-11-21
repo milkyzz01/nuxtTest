@@ -1,14 +1,20 @@
 <script setup lang="ts">
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-//variables
-const router = useRouter()
 
-// functions linear
-const goToContent = () => router.push('content/dashboard')
+
+// Trigger the query when the component is mounted
+onMounted(() => {
+  
+});
+
+// Variables and functions for routing
+const router = useRouter();
+const goToContent = () => router.push('content/dashboard');
 </script>
 
 <template>

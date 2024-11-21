@@ -1,48 +1,49 @@
 <script setup lang="ts">
-const invoices = [
-  {
-    invoice: 'INV001',
-    paymentStatus: 'Paid',
-    totalAmount: '$250.00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    invoice: 'INV002',
-    paymentStatus: 'Pending',
-    totalAmount: '$150.00',
-    paymentMethod: 'PayPal',
-  },
-  {
-    invoice: 'INV003',
-    paymentStatus: 'Unpaid',
-    totalAmount: '$350.00',
-    paymentMethod: 'Bank Transfer',
-  },
-  {
-    invoice: 'INV004',
-    paymentStatus: 'Paid',
-    totalAmount: '$450.00',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    invoice: 'INV005',
-    paymentStatus: 'Paid',
-    totalAmount: '$550.00',
-    paymentMethod: 'PayPal',
-  },
-  {
-    invoice: 'INV006',
-    paymentStatus: 'Pending',
-    totalAmount: '$200.00',
-    paymentMethod: 'Bank Transfer',
-  },
-  {
-    invoice: 'INV007',
-    paymentStatus: 'Unpaid',
-    totalAmount: '$300.00',
-    paymentMethod: 'Credit Card',
-  },
-]
+//test
+import { useQuery } from '@vue/apollo-composable';
+import gql from 'graphql-tag';
+
+//interfaces
+interface countries {
+  code: string;
+  name: string;
+  emoji: string;
+}
+interface fetchedcountries{
+  countries: countries[];
+}
+//end interfaces
+
+// Define the GraphQL query
+const GET_COUNTRIES = gql`
+  query {
+    countries {
+      code
+      name
+      emoji
+    }
+  }
+`;
+
+// get the countries
+const { result } = useQuery<fetchedcountries>(GET_COUNTRIES);
+const countries = computed(() => result.value?.countries ?? []);
+const countryA = computed(() => countries.value.filter((country) => country.name[0] === 'C'));
+
+
+onMounted(() => {
+  console.log(countryA.value.length)
+});
+
+//status handler
+const status = computed<string>(() => {
+  return countryA.value.length < 20 ? 'less than 20' : 'greater than 20';
+});
+
+//watchers
+
+
+//end test
 
 definePageMeta({
     layout: 'content'
@@ -55,49 +56,40 @@ definePageMeta({
         <Card>
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">
-              Total Revenue
+              Total Countries
             </CardTitle>
             <DollarSign class="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              $45,231.89
+              {{ countries.length }}
             </div>
-            <p class="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">
-              Subscriptions
+              Countries that Starts with letter A
             </CardTitle>
             <Users class="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              +2350
+              {{ countryA.length }}
             </div>
-            <p class="text-xs text-muted-foreground">
-              +180.1% from last month
-            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">
-              Sales
+              Status
             </CardTitle>
             <CreditCard class="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">
-              +12,234
+              {{ status }}
             </div>
-            <p class="text-xs text-muted-foreground">
-              +19% from last month
-            </p>
           </CardContent>
         </Card>
         <Card>
@@ -121,33 +113,29 @@ definePageMeta({
         <Card class="xl:col-span-2">
           <CardContent>
             <!--Table-->
-            <Table>
-            <TableCaption>A list of your recent invoices.</TableCaption>
+            <div class="overflow-y-auto max-h-[50vh] container">
+            <Table class="max-h-[100%] mt-10">
+            <TableCaption>A list of your countries.</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead class="w-[100px]">
-                  Invoice
+                <TableHead>
+                    Country Code
                 </TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead class="text-right">
-                  Amount
-                </TableHead>
+                <TableHead>Country Name</TableHead>
+                <TableHead>Emoji</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="invoice in invoices" :key="invoice.invoice">
+              <TableRow v-for="invoice in countries" :key="invoice.code">
                 <TableCell class="font-medium">
-                  {{ invoice.invoice }}
+                  {{ invoice.code }}
                 </TableCell>
-                <TableCell>{{ invoice.paymentStatus }}</TableCell>
-                <TableCell>{{ invoice.paymentMethod }}</TableCell>
-                <TableCell class="text-right">
-                  {{ invoice.totalAmount }}
-                </TableCell>
+                <TableCell>{{ invoice.name }}</TableCell>
+                <TableCell>{{ invoice.emoji }}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
+        </div>
           </CardContent>
         </Card>
         <Card>
