@@ -2,17 +2,42 @@
 //test
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
+import { Input } from '@/components/ui/input';
+import { MagnifyingGlassIcon } from '@radix-icons/vue'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useSorting } from '~/composables/useSort'
 
 //interfaces
-interface countries {
+export interface countries {
   code: string;
   name: string;
   emoji: string;
 }
-interface fetchedcountries{
+export interface fetchedcountries{
   countries: countries[];
 }
 //end interfaces
+
+//variables
+const searchInput = ref();
+
+//computed properties
+const filteredCountries = computed(() =>{
+  if(!searchInput.value){
+    return countries.value;
+  } else {
+    return countries.value.filter(country => 
+      country.name.toLowerCase().includes(searchInput.value.toLowerCase()));
+  }
+});
 
 // Define the GraphQL query
 const GET_COUNTRIES = gql`
@@ -26,7 +51,7 @@ const GET_COUNTRIES = gql`
 `;
 
 // get the countries
-const { result } = useQuery<fetchedcountries>(GET_COUNTRIES);
+const { result, loading } = useQuery<fetchedcountries>(GET_COUNTRIES);
 const countries = computed(() => result.value?.countries ?? []);
 const countryA = computed(() => countries.value.filter((country) => country.name[0] === 'C'));
 
@@ -44,6 +69,9 @@ const status = computed<string>(() => {
 
 
 //end test
+
+//handle composables
+const { selectedSort, sortMethod } = useSorting(filteredCountries);
 
 definePageMeta({
     layout: 'content'
@@ -110,23 +138,61 @@ definePageMeta({
         </Card>
       </div>
       <div class="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-        <Card class="xl:col-span-2">
+        <Card class="xl:col-span-2 overflow-y-auto">
           <CardContent>
+            <!--Search input-->
+            <!--Search input and select input wrapper-->
+            <div class="flex items-center justify-start gap-5">
+            <div class="relative w-full max-w-sm mt-10 items-center">
+              <Input id="search" type="text" v-model="searchInput" placeholder="Search..." class="pl-10" />
+              <span class="absolute start-0 inset-y-0 flex items-center justify-center px-2">
+                <MagnifyingGlassIcon class="size-6 text-muted-foreground" />
+              </span>
+            </div>
+            <!--Select Input-->
+            <div class="mt-5">
+            <Label for="terms">Sort By:</Label>
+            <Select v-model="selectedSort" id="terms">
+             <SelectTrigger class="w-[180px]">
+               <SelectValue placeholder="Sort By" />
+             </SelectTrigger>
+             <SelectContent>
+               <SelectGroup>
+                 <SelectLabel>Sort</SelectLabel>
+                 <SelectItem value='asc'>
+                   A - Z
+                 </SelectItem>
+                 <SelectItem value="desc">
+                   Z - A
+                 </SelectItem>
+               </SelectGroup>
+             </SelectContent>
+            </Select>
+          </div>
+          </div>
             <!--Table-->
-            <div class="overflow-y-auto max-h-[50vh] container">
-            <Table class="max-h-[100%] mt-10">
-            <TableCaption>A list of your countries.</TableCaption>
+            <div class="overflow-y-auto mt-5 max-h-[50vh] container">
+            <Table class="max-h-[100%]">
+            <TableCaption v-if="filteredCountries.length">A list of your countries.</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>
-                    Country Code
-                </TableHead>
+                <TableHead>Country Code</TableHead>
                 <TableHead>Country Name</TableHead>
                 <TableHead>Emoji</TableHead>
               </TableRow>
             </TableHeader>
+            <TableBody v-if="loading">
+              <TableRow class="text-center">
+                <TableCell class="col-span-3">Loading ...</TableCell> 
+              </TableRow>
+            </TableBody>
+            <TableBody v-if="filteredCountries.length === 0">
+              <TableRow class="text-center">
+                <TableCell colspan="3" class="text-center">No results ...</TableCell> 
+              </TableRow>
+            </TableBody>
             <TableBody>
-              <TableRow v-for="invoice in countries" :key="invoice.code">
+              <TableRow v-for="invoice in sortMethod" :key="invoice.code">
                 <TableCell class="font-medium">
                   {{ invoice.code }}
                 </TableCell>
